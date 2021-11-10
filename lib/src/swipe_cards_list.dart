@@ -1,15 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 import 'package:flutter_tinder_cards_clone/src/dialog_animations/picture_action_anim_dialog.dart';
 
-class TinderSwipeCardsList extends StatefulWidget {
+class SwipeCardsList extends StatefulWidget {
   final double cardWidth, cardHeight;
   final Widget Function(BuildContext, int) itemBuilder;
   final int childCount;
-  const TinderSwipeCardsList(
+  const SwipeCardsList(
       {required this.itemBuilder,
       required this.childCount,
       required this.cardHeight,
@@ -18,10 +15,10 @@ class TinderSwipeCardsList extends StatefulWidget {
       : super(key: key);
 
   @override
-  _TinderSwipeCardsListState createState() => _TinderSwipeCardsListState();
+  _SwipeCardsListState createState() => _SwipeCardsListState();
 }
 
-class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
+class _SwipeCardsListState extends State<SwipeCardsList>
     with TickerProviderStateMixin {
   late int childCount;
   late double cardWidth;
@@ -32,7 +29,7 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
   // card coordinates on screen
   Offset cardPosition = const Offset(0, 0);
 
-  double bottomCardRevealMargin = 8.0;
+  double bottomCardRevealMargin = 16.0;
   int quadrant = 0;
 
   //swiped pixels / card pixels width
@@ -91,19 +88,18 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
                     left: getBottomPictureMargin(),
                     right: getBottomPictureMargin(),
                     child: SizedBox(
-                        child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.white,
-                          boxShadow: const [
-                            BoxShadow(
-                                offset: Offset(4, 4),
-                                color: Colors.grey,
-                                blurRadius: 8)
-                          ]),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: getNextImage(),
+                        child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                  offset: Offset(4, 4),
+                                  color: Colors.grey,
+                                  blurRadius: 8)
+                            ]),
+                        child: getNextCard(),
                       ),
                     )),
                   ),
@@ -112,19 +108,15 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
                       if (details.localPosition.dx < (cardWidth / 2)) {
                         //left
                         if (details.localPosition.dy < (cardHeight * 0.6)) {
-                          log('quadrant 2');
                           quadrant = 2;
                         } else {
-                          log('quadrant 3');
                           quadrant = 3;
                         }
                       } else {
                         //right
                         if (details.localPosition.dy < (cardHeight * 0.6)) {
-                          log('quadrant 1');
                           quadrant = 1;
                         } else {
-                          log('quadrant 4');
                           quadrant = 4;
                         }
                       }
@@ -196,6 +188,7 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
                           resetTiles();
                         });
                       } else {
+                        //reset image position and angle
                         cardPositionResetAnimation = Tween<Offset>(
                                 begin: cardPosition,
                                 end: const Offset(0.0, 0.0))
@@ -234,19 +227,18 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
                             SizedBox(
                                 width: cardWidth,
                                 height: cardHeight,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      color: Colors.white,
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            offset: Offset(4, 4),
-                                            color: Colors.grey,
-                                            blurRadius: 8)
-                                      ]),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: getCurrentImage(),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                              offset: Offset(4, 4),
+                                              color: Colors.grey,
+                                              blurRadius: 8)
+                                        ]),
+                                    child: getCurrentCard(),
                                   ),
                                 )),
                             if (isPictureDisliked() || overrideDislikeAnim)
@@ -283,19 +275,6 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
                                           fontWeight: FontWeight.bold),
                                     ),
                                   )),
-                            Positioned(
-                                bottom: 50,
-                                left: 50,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Text(
-                                    'Picture ' + (currentIndex + 1).toString(),
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                )),
                           ],
                         ),
                       ),
@@ -376,11 +355,11 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
     );
   }
 
-  Widget getCurrentImage() {
+  Widget getCurrentCard() {
     return widget.itemBuilder(context, currentIndex);
   }
 
-  Widget getNextImage() {
+  Widget getNextCard() {
     if (currentIndex + 1 < childCount) {
       return widget.itemBuilder(context, currentIndex + 1);
     } else {
@@ -442,6 +421,7 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
     }
     cardPosition = const Offset(0, 0);
     swipedOffset = 0.0;
+    quadrant = 0;
 
     updateDetails();
     setState(() {});
@@ -459,7 +439,6 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
     switch (quadrant) {
       case 1:
         return Alignment.bottomCenter;
-
       case 2:
         return Alignment.bottomCenter;
       case 3:
@@ -488,14 +467,11 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
     swipedScale = swipedOffset / cardWidth;
 
     if (cardPosition.dx < -15) {
-      //log('card position left');
       cardRelativePosition = -1;
     } else if (cardPosition.dx > 15) {
-      //log('card position right');
       cardRelativePosition = 1;
     } else {
       cardRelativePosition = 0;
-      //log('card position center');
     }
   }
 
@@ -520,7 +496,7 @@ class _TinderSwipeCardsListState extends State<TinderSwipeCardsList>
         : const Offset(0, 0);
     swipedOffset =
         cardAngleResetAnimation != null ? cardAngleResetAnimation!.value : 0.0;
-    log('swiped offset $swipedOffset');
+
     updateDetails();
     setState(() {});
   }
